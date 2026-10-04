@@ -48,7 +48,7 @@ jobs:
           tag_with_sha: true
   # Deploy to Kubernetes.
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.ref == 'refs/heads/master'
     needs:
       - run-tests
