@@ -66,7 +66,7 @@ jobs:
         working-directory: ./manifests
         run: |
           kustomize edit set image \
-            REPO:TAG=$IMAGE_REPOSITORY:sha-${GITHUB_SHA::7}
+            REPOSITORY=$IMAGE_REPOSITORY:sha-${GITHUB_SHA::7}
 
       - name: Deploy to Kubernetes
         run: |
