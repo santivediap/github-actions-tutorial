@@ -46,3 +46,29 @@ jobs:
           repository: ${{ env.IMAGE_REPOSITORY }}
           tag_with_ref: true
           tag_with_sha: true
+        # Deploy to Kubernetes.
+    deploy:
+      runs-on: ubuntu-latest
+      if: github.ref == 'refs/heads/master'
+      needs:
+        - run-tests
+        - build-and-release
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Configure kubectl
+          run: echo ${{ secrets.KUBECONFIG }} \
+          | base64 -d > kubeconfig.yml
+
+        - name: Kustomize image
+          working-directory: ./manifests
+          run: kustomize edit set image \
+          REPO:TAG=$IMAGE_REPOSITORY:sha-${GITHUB_SHA::7}
+
+        - name: Deploy to Kubernetes
+          run: kubectl --kubeconfig kubeconfig.yml \
+          apply --kustomize manifests/
+
+        - name: Validate deployment
+          run: kubectl --kubeconfig kubeconfig.yml \
+          rollout status --timeout 120s deployment/foobar
